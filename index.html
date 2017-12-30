@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            height: 100vh;
+        }
+        svg {
+            overflow: visible;
+            margin: auto;
+        }
+        path {
+            stroke: grey;
+            stroke-width: 2;
+            fill: none;
+        }
+        circle {
+            stroke: grey;
+            stroke-width: 2;
+            fill: none;
+        }
+        form {
+            position: absolute;
+        }
+        label {
+            display: block;
+        }
+
+
+        .Star .base,
+        .Star .middle {
+            fill: transparent;
+            stroke: transparent;
+        }
+
+        .Star_points .base {
+            stroke: grey;
+            fill : #fff;
+        }
+        .Star_points .middle {
+            stroke: grey;
+            fill: #67b0ff
+        }
+    </style>
+</head>
+<body>
+    <svg height="300" width="300" >
+        <g class="Star" id="canvas" transform="translate(150, 150)">
+        </g>
+
+    </svg>
+
+    <form action="">
+        <label>
+            N
+            <input type="range" min="3" max="20" step="1" value="3" id = "n">
+        </label>
+
+        <label>
+            Small Radius
+            <input type="range" min="3" max="149" step="1" value="40" id = "small-radius">
+        </label>
+
+        <label>
+            Show points
+            <input type="checkbox" min="3" max="149" step="1" value="40" id = "show-points">
+        </label>
+
+        <label>
+            Line/Curve
+            <input type="checkbox" min="3" max="149" step="1" value="40" id = "draw-line">
+        </label>
+
+    </form>
+
+    <script src="bundle.js"></script>
+</body>
+</html>
