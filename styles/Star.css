@@ -13,7 +13,7 @@
     fill: #67b0ff
 }
 
-svg { overflow: visible; margin: auto;}
+svg { overflow: visible; margin: auto; width: 50%;}
 path {
     stroke: grey;
     stroke-width: 2;

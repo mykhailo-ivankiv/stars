@@ -3,7 +3,15 @@ import * as d3 from "d3";
 
 const star = d3.select("#canvas").append("path");
 
-const middlePoint = ([x1, y1], [x2, y2]) => [(x1 + x2) / 2, (y1 + y2) / 2];
+const getPointAtLinePart = ([x1, y1], [x2, y2], part) => {
+    const d = Math.sqrt(Math.abs( (x1 + x2) **2  + (y1+y2)**2  ))
+    const k1 = d * part;
+    const k2 = d - k1;
+    return [
+        (x1 * k1 + x2 * k2) / d,
+        (y1  * k1 + y2 * k2) / d
+    ]
+};
 
 const getPoints = (n, r1, r2) => {
   const angle = 2 * Math.PI / n;
@@ -21,29 +29,30 @@ const getPoints = (n, r1, r2) => {
       return accum;
     }, []);
 
-  const additionalPoints = basePoints.map((el, i, arr) =>
-    middlePoint(el, arr[i + 1] ? arr[i + 1] : arr[0])
-  );
-  return { basePoints, additionalPoints };
+  return basePoints;
 };
 
-const renderStarPath = (n, bigRadius, smallRadius, drawLine) => {
-  const { basePoints, additionalPoints } = getPoints(n, bigRadius, smallRadius);
+const getAdditionalPoints = points =>
+  points.map((el, i, arr) =>
+    getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0])
+  );
 
-  if (drawLine) {
-    return `
-        M ${basePoints[0].join()}
-        ${basePoints.map(point => `L ${point.join(" ")} `).join(" ")}
-        L ${basePoints[0].join()}
-    `;
-  } else {
-    return `
-        M ${additionalPoints[2 * n - 1].join()}
-        ${basePoints
-          .map((point, i) => `Q ${point.join()} ${additionalPoints[i].join()}`)
-          .join(" ")}
-    `;
-  }
+const getExtendedAdditionalPoints = (points, part = 1 / 2) =>
+  points.reduce((accum, el, i, arr) => {
+    accum.push(getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0],  1 - part ));
+    accum.push( getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0],  part) );
+    return accum;
+  }, []);
+
+const renderStarPath = (basePoints, additionalPoints) => {
+  const n = additionalPoints.length;
+  return `
+         M ${additionalPoints[n - 1].join()}
+         ${basePoints.map((point, i) => `
+             Q ${basePoints[i].join()} ${additionalPoints[i * 2].join()}
+             L ${additionalPoints[i * 2 + 1].join()}
+         `).join("")}
+     `;
 };
 
 const renderPoints = (data, className = "") => {
@@ -75,25 +84,27 @@ const sRadius = fromEvent("input", document.querySelector("#small-radius"))
   .map(Number)
   .startWith(40);
 
+ const proportion = fromEvent("input", document.querySelector("#proportions"))
+    .map(e => e.target.value)
+    .map(Number)
+    .startWith(0.5);
+
 const showPoints = fromEvent("input", document.querySelector("#show-points"))
   .map(e => e.target.checked)
   .map(Boolean)
   .startWith(true);
 
-const drawLine = fromEvent("input", document.querySelector("#draw-line"))
-  .map(e => e.target.checked)
-  .map(Boolean)
-  .startWith(false);
-
-combineArray((...args) => args, [n, sRadius, showPoints, drawLine]).observe(
-  ([n, smallRadius, showPoints, drawLine]) => {
-    star.attr("d", renderStarPath(n, 150, smallRadius, drawLine));
-
+combineArray((...args) => args, [n, sRadius, showPoints, proportion]).observe(
+  ([n, smallRadius, showPoints,  proportion]) => {
     showPoints
       ? document.querySelector("#canvas").classList.add("Star_points")
       : document.querySelector("#canvas").classList.remove("Star_points");
 
-    const { basePoints, additionalPoints } = getPoints(n, 150, smallRadius);
+    const basePoints = getPoints(n, 150, smallRadius);
+    const additionalPoints = getExtendedAdditionalPoints(basePoints, proportion);
+
+    star.attr("d", renderStarPath(basePoints, additionalPoints));
+
     renderPoints(basePoints, "base");
     renderPoints(additionalPoints, "middle");
   }
