@@ -11825,77 +11825,55 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-const createElement = document.createElementNS.bind(
-  document,
-  "http://www.w3.org/2000/svg"
-);
+const star = __WEBPACK_IMPORTED_MODULE_1_d3__["a" /* select */]("#canvas").append("path");
 
-const star = createElement("path");
+const middlePoint = ([x1, y1], [x2, y2]) => [(x1 + x2) / 2, (y1 + y2) / 2];
 
-const middlePoint = (p1, p2) => [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+const getPoints = (n, r1, r2) => {
+  const angle = 2 * Math.PI / n;
+
+  const basePoints = Array(n)
+    .fill()
+    .reduce((accum, el, i) => {
+      accum.push([Math.cos(angle * i) * r1, Math.sin(angle * i) * r1]);
+
+      accum.push([
+        Math.cos(angle * i + angle / 2) * r2,
+        Math.sin(angle * i + angle / 2) * r2
+      ]);
+
+      return accum;
+    }, []);
+
+  const additionalPoints = basePoints.map((el, i, arr) =>
+    middlePoint(el, arr[i + 1] ? arr[i + 1] : arr[0])
+  );
+  return { basePoints, additionalPoints };
+};
 
 const renderStarPath = (n, bigRadius, smallRadius, drawLine) => {
-  const angle = 2 * Math.PI / n;
-  const apex = Array(n)
-    .fill()
-    .map((el, i) => i);
-
-  const points = apex.reduce((accum, i) => {
-    accum.push([
-      Math.cos(angle * i) * bigRadius,
-      Math.sin(angle * i) * bigRadius
-    ]);
-
-    accum.push([
-      Math.cos(angle * i + angle / 2) * smallRadius,
-      Math.sin(angle * i + angle / 2) * smallRadius
-    ]);
-
-    return accum;
-  }, []);
-
-  const middlePoints = points.reduce((accum, el, i, arr) => {
-    accum.push(middlePoint(el, arr[i + 1] ? arr[i + 1] : arr[0]));
-    return accum;
-  }, []);
+  const { basePoints, additionalPoints } = getPoints(n, bigRadius, smallRadius);
 
   if (drawLine) {
     return `
-        M ${points[0].join()}
-        ${points.map( point => `L ${point.join(" ")} `).join(" ")}
-        L ${points[0].join()}
+        M ${basePoints[0].join()}
+        ${basePoints.map(point => `L ${point.join(" ")} `).join(" ")}
+        L ${basePoints[0].join()}
     `;
   } else {
     return `
-        M ${middlePoints[2 * n - 1].join()}
-        ${points
-          .map((point, i) => `Q ${point.join()} ${middlePoints[i].join()}`)
+        M ${additionalPoints[2 * n - 1].join()}
+        ${basePoints
+          .map((point, i) => `Q ${point.join()} ${additionalPoints[i].join()}`)
           .join(" ")}
     `;
   }
 };
 
-document.querySelector("#canvas").append(star);
-
-const renderPoints = (n, bigRadius, smallRadius, className = "") => {
-  const angle = 2 * Math.PI / n;
-  const apex = Array(n)
-    .fill()
-    .map((el, i) => i);
-
-  const pointsBig = apex.map(i => [
-    Math.cos(angle * i) * bigRadius,
-    Math.sin(angle * i) * bigRadius
-  ]);
-
-  const pointsSmall = apex.map(i => [
-    Math.cos(angle * i + angle / 2) * smallRadius,
-    Math.sin(angle * i + angle / 2) * smallRadius
-  ]);
-
+const renderPoints = (data, className = "") => {
   const points = __WEBPACK_IMPORTED_MODULE_1_d3__["a" /* select */]("#canvas")
     .selectAll("." + className)
-    .data(pointsBig.concat(pointsSmall));
+    .data(data);
 
   points.attr("cx", d => d[0]).attr("cy", d => d[1]);
 
@@ -11908,39 +11886,12 @@ const renderPoints = (n, bigRadius, smallRadius, className = "") => {
     .attr("cy", d => d[1]);
 
   points.exit().remove();
-
-  const middlePoints = apex.reduce((accum, i) => {
-    accum.push(
-      middlePoint(
-        pointsBig[i],
-        pointsSmall[i - 1] ? pointsSmall[i - 1] : pointsSmall[n - 1]
-      )
-    );
-    accum.push(middlePoint(pointsBig[i], pointsSmall[i]));
-    return accum;
-  }, []);
-
-  const middlePointsEl = __WEBPACK_IMPORTED_MODULE_1_d3__["a" /* select */]("#canvas")
-    .selectAll(".middle")
-    .data(middlePoints);
-
-  middlePointsEl.attr("cx", d => d[0]).attr("cy", d => d[1]);
-
-  middlePointsEl
-    .enter()
-    .append("circle")
-    .attr("class", "middle")
-    .attr("r", 3)
-    .attr("cx", d => d[0])
-    .attr("cy", d => d[1]);
-
-  middlePointsEl.exit().remove();
 };
 
 const n = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("input", document.querySelector("#n"))
   .map(e => e.target.value)
   .map(Number)
-  .startWith(3);
+  .startWith(5);
 
 const sRadius = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("input", document.querySelector("#small-radius"))
   .map(e => e.target.value)
@@ -11950,7 +11901,7 @@ const sRadius = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* 
 const showPoints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("input", document.querySelector("#show-points"))
   .map(e => e.target.checked)
   .map(Boolean)
-  .startWith(false);
+  .startWith(true);
 
 const drawLine = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("input", document.querySelector("#draw-line"))
   .map(e => e.target.checked)
@@ -11959,15 +11910,15 @@ const drawLine = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /*
 
 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["b" /* combineArray */])((...args) => args, [n, sRadius, showPoints, drawLine]).observe(
   ([n, smallRadius, showPoints, drawLine]) => {
-
-    __WEBPACK_IMPORTED_MODULE_1_d3__["a" /* select */](star)
-        .attr("d", renderStarPath(n, 150, smallRadius, drawLine));
+    star.attr("d", renderStarPath(n, 150, smallRadius, drawLine));
 
     showPoints
       ? document.querySelector("#canvas").classList.add("Star_points")
       : document.querySelector("#canvas").classList.remove("Star_points");
 
-    renderPoints(n, 150, smallRadius, "base");
+    const { basePoints, additionalPoints } = getPoints(n, 150, smallRadius);
+    renderPoints(basePoints, "base");
+    renderPoints(additionalPoints, "middle");
   }
 );
 

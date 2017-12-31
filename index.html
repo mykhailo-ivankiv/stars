@@ -6,16 +6,10 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <link rel="stylesheet" href="Star.css">
     <style>
-        body {
-            display: flex;
-            margin: 0;
-            height: 100vh;
-        }
-        svg {
-            overflow: visible;
-            margin: auto;
-        }
+        body { display: flex; margin: 0; height: 100vh; font-family: PT Sans, sans-serif;}
+        svg { overflow: visible; margin: auto;}
         path {
             stroke: grey;
             stroke-width: 2;
@@ -31,6 +25,11 @@
         }
         label {
             display: block;
+        }
+
+        label span {
+            width: 100px;
+            display: inline-block;
         }
 
 
@@ -59,22 +58,22 @@
 
     <form action="">
         <label>
-            N
+            <span>N</span>
             <input type="range" min="3" max="20" step="1" value="3" id = "n">
         </label>
 
         <label>
-            Small Radius
+            <span>Inner radius</span>
             <input type="range" min="3" max="149" step="1" value="40" id = "small-radius">
         </label>
 
         <label>
-            Show points
+            <span>Show points</span>
             <input type="checkbox" min="3" max="149" step="1" value="40" id = "show-points">
         </label>
 
         <label>
-            Line/Curve
+            <span>Line/Curve</span>
             <input type="checkbox" min="3" max="149" step="1" value="40" id = "draw-line">
         </label>
 
