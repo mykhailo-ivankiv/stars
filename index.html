@@ -6,54 +6,15 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <link rel="stylesheet" href="Star.css">
-    <style>
-        body { display: flex; margin: 0; height: 100vh; font-family: PT Sans, sans-serif;}
-        svg { overflow: visible; margin: auto;}
-        path {
-            stroke: grey;
-            stroke-width: 2;
-            fill: none;
-        }
-        circle {
-            stroke: grey;
-            stroke-width: 2;
-            fill: none;
-        }
-        form {
-            position: absolute;
-        }
-        label {
-            display: block;
-        }
 
-        label span {
-            width: 100px;
-            display: inline-block;
-        }
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/Form.css">
+    <link rel="stylesheet" href="styles/Star.css">
 
-
-        .Star .base,
-        .Star .middle {
-            fill: transparent;
-            stroke: transparent;
-        }
-
-        .Star_points .base {
-            stroke: grey;
-            fill : #fff;
-        }
-        .Star_points .middle {
-            stroke: grey;
-            fill: #67b0ff
-        }
-    </style>
 </head>
 <body>
     <svg height="300" width="300" >
-        <g class="Star" id="canvas" transform="translate(150, 150)">
-        </g>
-
+        <g class="Star" id="canvas" transform="translate(150, 150)"></g>
     </svg>
 
     <form action="">

@@ -1,0 +1,26 @@
+.Star .base,
+.Star .middle {
+    fill: transparent;
+    stroke: transparent;
+}
+
+.Star_points .base {
+    stroke: grey;
+    fill : #fff;
+}
+.Star_points .middle {
+    stroke: grey;
+    fill: #67b0ff
+}
+
+svg { overflow: visible; margin: auto;}
+path {
+    stroke: grey;
+    stroke-width: 2;
+    fill: none;
+}
+circle {
+    stroke: grey;
+    stroke-width: 2;
+    fill: none;
+}

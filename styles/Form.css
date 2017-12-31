@@ -1,0 +1,11 @@
+form {
+    position: absolute;
+}
+label {
+    display: block;
+}
+
+label span {
+    width: 100px;
+    display: inline-block;
+}
