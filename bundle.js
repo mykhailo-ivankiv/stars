@@ -11825,8 +11825,11 @@ module.exports = __webpack_require__(534);
 const fromInput = input => {
   switch (input.type) {
     case "checkbox":
-      return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("input", input)
-        .map(e => e.target.checked)
+      return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("change", input)
+        .map(e => {
+          console.log(e.target.checked);
+          return e.target.checked;
+        })
         .startWith(input.checked);
 
     default:
@@ -11992,6 +11995,7 @@ const angle = dragStart
 
 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["c" /* combineArray */])((...args) => args, [n, radius, showPoints, proportion]).observe(
   ([n, smallRadius, showPoints, proportion]) => {
+
     const basePoints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__script_star__["a" /* getPoints */])(n, 150, smallRadius);
     const additionalPoints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__script_star__["b" /* getAdditionalPoints */])(basePoints, proportion);
 

@@ -69,6 +69,7 @@ const angle = dragStart
 
 combineArray((...args) => args, [n, radius, showPoints, proportion]).observe(
   ([n, smallRadius, showPoints, proportion]) => {
+
     const basePoints = getPoints(n, 150, smallRadius);
     const additionalPoints = getAdditionalPoints(basePoints, proportion);
 
