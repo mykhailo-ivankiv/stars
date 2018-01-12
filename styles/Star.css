@@ -26,6 +26,7 @@ svg {
   width: 50%;
   /*width: 300px;*/
   /*height: 300px;*/
+  border-radius: 100%;
 }
 
 path {

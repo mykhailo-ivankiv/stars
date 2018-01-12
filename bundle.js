@@ -11826,10 +11826,7 @@ const fromInput = input => {
   switch (input.type) {
     case "checkbox":
       return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("change", input)
-        .map(e => {
-          console.log(e.target.checked);
-          return e.target.checked;
-        })
+        .map(e => e.target.checked)
         .startWith(input.checked);
 
     default:
@@ -11847,75 +11844,102 @@ const fromInput = input => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-const getPointAtLinePart = ([x1, y1], [x2, y2], part) => {
-  const d = Math.sqrt(Math.abs((x1 + x2) ** 2 + (y1 + y2) ** 2));
-  const k1 = d * part;
-  const k2 = d - k1;
-  return [(x1 * k1 + x2 * k2) / d, (y1 * k1 + y2 * k2) / d];
-};
-
-const getPoints = (n, r1, r2) => {
-  const angle = 2 * Math.PI / n;
-
-  return [...Array(n).keys()].reduce((accum, i) => {
-    accum.push([Math.cos(angle * i) * r1, Math.sin(angle * i) * r1]);
-
-    accum.push([
-      Math.cos(angle * i + angle / 2) * r2,
-      Math.sin(angle * i + angle / 2) * r2
-    ]);
-
-    return accum;
-  }, []);
-};
-/* harmony export (immutable) */ __webpack_exports__["a"] = getPoints;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Line__ = __webpack_require__(538);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Point__ = __webpack_require__(539);
 
 
-const getAdditionalPoints = (points, part = 1 / 2) =>
-  points.reduce((accum, el, i, arr) => {
-    accum.push(
-      getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0], 1 - part),
-      getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0], part)
+
+class Star {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.root = canvas.append("path");
+  }
+
+  update(n, radius, smallRadius, proportion) {
+    this.basePoints = this.getPoints(n, radius, smallRadius);
+    this.additionalPoints = this.getAdditionalPoints(
+      this.basePoints,
+      proportion
     );
+  }
 
-    return accum;
-  }, []);
-/* harmony export (immutable) */ __webpack_exports__["b"] = getAdditionalPoints;
+  getPoints(n, r1, r2) {
+    const angle = 2 * Math.PI / n;
 
+    return [...Array(n).keys()].reduce((accum, i) => {
+      accum.push([Math.cos(angle * i) * r1, Math.sin(angle * i) * r1]);
 
-const renderStarPath = (basePoints, additionalPoints) => {
-  const n = additionalPoints.length;
-  return `
-         M ${additionalPoints[n - 1].join()}
-         ${basePoints
-           .map(
-             (point, i) => `
+      accum.push([
+        Math.cos(angle * i + angle / 2) * r2,
+        Math.sin(angle * i + angle / 2) * r2
+      ]);
+
+      return accum;
+    }, []);
+  }
+
+  getAdditionalPoints(points, part = 1 / 2) {
+    return points.reduce((accum, el, i, arr) => {
+      const p1 = new __WEBPACK_IMPORTED_MODULE_1__Point__["a" /* default */](...el);
+      const p2 = new __WEBPACK_IMPORTED_MODULE_1__Point__["a" /* default */](...(arr[i + 1] ? arr[i + 1] : arr[0]));
+
+      const line = new __WEBPACK_IMPORTED_MODULE_0__Line__["a" /* default */](p1, p2);
+
+      accum.push(line.getPointAtPart(1 - part), line.getPointAtPart(part));
+
+      return accum;
+    }, []);
+  }
+
+  getPath() {
+    const { basePoints, additionalPoints } = this;
+
+    const n = additionalPoints.length;
+    return `
+       M ${additionalPoints[n - 1].join()}
+       ${basePoints
+         .map(
+           (point, i) => `
              Q ${basePoints[i].join()} ${additionalPoints[i * 2].join()}
              L ${additionalPoints[i * 2 + 1].join()}
-         `
-           )
-           .join("")}
-     `;
-};
-/* harmony default export */ __webpack_exports__["c"] = (renderStarPath);
+           `
+         )
+         .join("")}
+   `;
+  }
 
-const renderPoints = (context, data, className = "") => {
-  const points = context.selectAll("." + className).data(data);
+  renderPoints(context, data, className = "") {
+    const points = context.selectAll("." + className).data(data);
 
-  points.attr("cx", d => d[0]).attr("cy", d => d[1]);
+    points.attr("cx", d => d[0]).attr("cy", d => d[1]);
 
-  points
-    .enter()
-    .append("circle")
-    .attr("class", className)
-    .attr("r", 3)
-    .attr("cx", d => d[0])
-    .attr("cy", d => d[1]);
+    points
+      .enter()
+      .append("circle")
+      .attr("class", className)
+      .attr("r", 3)
+      .attr("cx", d => d[0])
+      .attr("cy", d => d[1]);
 
-  points.exit().remove();
-};
-/* harmony export (immutable) */ __webpack_exports__["d"] = renderPoints;
+    points.exit().remove();
+  }
 
+  render(showPoints) {
+    this.root.attr("d", this.getPath());
+
+    this.canvas
+      .classed("Star_points", showPoints)
+      .call(
+        this.renderPoints,
+        this.basePoints.filter((a, i) => !(i % 2)),
+        "outer"
+      )
+      .call(this.renderPoints, this.basePoints.filter((a, i) => i % 2), "inner")
+      .call(this.renderPoints, this.additionalPoints, "middle");
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Star);
 
 
 /***/ }),
@@ -11935,7 +11959,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 const $ = document.querySelector.bind(document);
 const canvas = __WEBPACK_IMPORTED_MODULE_2_d3__["a" /* select */]("#canvas");
-const star = canvas.append("path");
 
 const n = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__script_form__["a" /* fromInput */])($("#n")).map(Number);
 const radiusInput = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__script_form__["a" /* fromInput */])($("#small-radius")).map(Number);
@@ -11953,59 +11976,65 @@ const mousemove = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /
   ev.clientY
 ]);
 
-
 const dragRadius = dragStart
-    .map(() => {
-        const { width, left, height, top } = document.querySelector("svg").getBoundingClientRect();
-        return [left + width / 2, top + height / 2, width / 300];
-    })
-    .chain(([cx, cy, scale]) => {
-        return mousemove
-            .takeUntil(dragEnd)
-            .map(([x, y]) => Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) / scale);
-    })
-    .map ( radius => {
-        const min=3;
-        const max=149;
-
-        if ( radius < min) return min;
-        if ( radius > max) return max;
-        return radius
-    })
-
-dragRadius.observe ( radius => {
-    $("#small-radius").value = radius;
-})
-
-const radius = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["b" /* merge */])(
-  radiusInput,
-  dragRadius
-);
-
-const angle = dragStart
   .map(() => {
-    const { width, height } = document.body.getBoundingClientRect();
-    return [width / 2, height / 2];
+    const { width, left, height, top } = document
+      .querySelector("svg")
+      .getBoundingClientRect();
+    return [left + width / 2, top + height / 2, width / 300];
   })
-  .chain(([cx, cy]) => {
+  .chain(([cx, cy, scale]) => {
+    console.log(scale);
     return mousemove
       .takeUntil(dragEnd)
-      .map(([x, y]) => Math.atan2(cx - x, cy - y));
+      .map(([x, y]) => Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) / scale);
+  })
+  .map(radius => {
+    const min = 3;
+    const max = 149;
+
+    if (radius < min) return min;
+    if (radius > max) return max;
+    return radius;
   });
+
+dragRadius.observe(radius => {
+  $("#small-radius").value = radius;
+});
+
+const radius = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["b" /* merge */])(radiusInput, dragRadius);
+
+const angle = dragStart
+  .map(([x, y]) => {
+    const { width, height } = document.body.getBoundingClientRect();
+    const [cx, cy] = [width / 2, height / 2];
+    const angle = Math.atan2(cx - x, cy - y);
+    return [cx, cy, angle];
+  })
+  .chain(([cx, cy, startAngle]) => {
+    const startCanvasAngle = Number(
+      (__WEBPACK_IMPORTED_MODULE_2_d3__["a" /* select */](".wrapper")
+        .style("transform")
+        .match(/-?\d+\.\d+/) || [0])[0]
+    );
+
+    return mousemove
+      .takeUntil(dragEnd)
+      .map(
+        ([x, y]) =>
+          startCanvasAngle + (startAngle - Math.atan2(cx - x, cy - y)) * 57.3
+      );
+  })
+  .observe(a => {
+    __WEBPACK_IMPORTED_MODULE_2_d3__["a" /* select */](".wrapper").style("transform", `rotate(${a}deg)`);
+  });
+
+const star = new __WEBPACK_IMPORTED_MODULE_3__script_star__["a" /* default */](canvas);
 
 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["c" /* combineArray */])((...args) => args, [n, radius, showPoints, proportion]).observe(
   ([n, smallRadius, showPoints, proportion]) => {
-
-    const basePoints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__script_star__["a" /* getPoints */])(n, 150, smallRadius);
-    const additionalPoints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__script_star__["b" /* getAdditionalPoints */])(basePoints, proportion);
-
-    star.attr("d", __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__script_star__["c" /* default */])(basePoints, additionalPoints));
-    canvas
-      .classed("Star_points", showPoints)
-
-      .call(__WEBPACK_IMPORTED_MODULE_3__script_star__["d" /* renderPoints */], basePoints.filter((a, i) => !(i % 2)), "outer")
-      .call(__WEBPACK_IMPORTED_MODULE_3__script_star__["d" /* renderPoints */], basePoints.filter((a, i) => i % 2), "inner")
-      .call(__WEBPACK_IMPORTED_MODULE_3__script_star__["d" /* renderPoints */], additionalPoints, "middle");
+    star.update(n, 150, smallRadius, proportion);
+    star.render(showPoints);
   }
 );
 
@@ -28591,6 +28620,57 @@ module.exports = function(module) {
 	return module;
 };
 
+
+/***/ }),
+/* 538 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Point__ = __webpack_require__(539);
+
+class Line extends Array {
+    constructor(begin, end) {
+        super();
+        this.begin = begin;
+        this.end = end;
+        this[0] = begin;
+        this[1] = end;
+    }
+
+    getPointAtPart(part) {
+        const d = this.distance();
+        const k1 = d * part;
+        const k2 = d - k1;
+        return new __WEBPACK_IMPORTED_MODULE_0__Point__["a" /* default */](
+            (this.begin.x * k1 + this.end.x * k2) / d,
+            (this.begin.y * k1 + this.end.y * k2) / d
+        );
+    }
+
+    distance() {
+        return Math.sqrt(
+            (this.begin.x + this.end.x) ** 2 + (this.begin.y + this.end.y) ** 2
+        );
+    }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Line);
+
+/***/ }),
+/* 539 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Point extends Array {
+    constructor(x, y) {
+        super();
+        this.x = x;
+        this.y = y;
+        this[0] = x;
+        this[1] = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["a"] = (Point);
 
 /***/ })
 /******/ ]);
