@@ -1,29 +1,40 @@
-.Star .base,
+.Star .outer,
+.Star .inner,
 .Star .middle {
-    fill: transparent;
-    stroke: transparent;
+  fill: transparent;
+  stroke: transparent;
 }
 
-.Star_points .base {
-    stroke: grey;
-    fill : #fff;
+.Star_points .outer {
+  stroke: grey;
+  fill: #fff;
 }
+
+.Star_points .inner {
+  stroke: grey;
+  fill: #fff;
+}
+
 .Star_points .middle {
-    stroke: grey;
-    fill: #67b0ff
+  stroke: grey;
+  fill: #67b0ff;
 }
 
 svg {
-    overflow: visible; margin: auto; width: 50%;
+  overflow: visible;
+  margin: auto;
+  width: 50%;
+  /*width: 300px;*/
+  /*height: 300px;*/
 }
 
 path {
-    stroke: grey;
-    stroke-width: 2;
-    fill: none;
+  stroke: grey;
+  stroke-width: 2;
+  fill: none;
 }
 circle {
-    stroke: grey;
-    stroke-width: 2;
-    fill: none;
+  stroke: grey;
+  stroke-width: 2;
+  fill: none;
 }

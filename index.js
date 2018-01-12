@@ -1,117 +1,83 @@
-import { fromEvent, combineArray } from "most";
+import { combineArray, fromEvent, chain, merge } from "most";
+import { fromInput } from "./script/form";
 import * as d3 from "d3";
+import renderStarPath, {
+  renderPoints,
+  getPoints,
+  getAdditionalPoints
+} from "./script/star";
 
-const star = d3.select("#canvas").append("path");
+const $ = document.querySelector.bind(document);
+const canvas = d3.select("#canvas");
+const star = canvas.append("path");
 
-const getPointAtLinePart = ([x1, y1], [x2, y2], part) => {
-  const d = Math.sqrt(Math.abs((x1 + x2) ** 2 + (y1 + y2) ** 2));
-  const k1 = d * part;
-  const k2 = d - k1;
-  return [(x1 * k1 + x2 * k2) / d, (y1 * k1 + y2 * k2) / d];
-};
+const n = fromInput($("#n")).map(Number);
+const radiusInput = fromInput($("#small-radius")).map(Number);
+const proportion = fromInput($("#proportions")).map(Number);
+const showPoints = fromInput($("#show-points")).map(Boolean);
 
-const getPoints = (n, r1, r2) => {
-  const angle = 2 * Math.PI / n;
+const dragStart = fromEvent("mousedown", canvas.node())
+  .filter(ev => ev.target.matches(".inner"))
+  .map(ev => [ev.clientX, ev.clientY]);
 
-  const basePoints = Array(n)
-    .fill()
-    .reduce((accum, el, i) => {
-      accum.push([Math.cos(angle * i) * r1, Math.sin(angle * i) * r1]);
+const dragEnd = fromEvent("mouseup", document);
 
-      accum.push([
-        Math.cos(angle * i + angle / 2) * r2,
-        Math.sin(angle * i + angle / 2) * r2
-      ]);
+const mousemove = fromEvent("mousemove", window).map(ev => [
+  ev.clientX,
+  ev.clientY
+]);
 
-      return accum;
-    }, []);
 
-  return basePoints;
-};
+const dragRadius = dragStart
+    .map(() => {
+        const { width, left, height, top } = document.querySelector("svg").getBoundingClientRect();
+        return [left + width / 2, top + height / 2, width / 300];
+    })
+    .chain(([cx, cy, scale]) => {
+        return mousemove
+            .takeUntil(dragEnd)
+            .map(([x, y]) => Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) / scale);
+    })
+    .map ( radius => {
+        const min=3;
+        const max=149;
 
-const getAdditionalPoints = points =>
-  points.map((el, i, arr) =>
-    getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0])
-  );
+        if ( radius < min) return min;
+        if ( radius > max) return max;
+        return radius
+    })
 
-const getExtendedAdditionalPoints = (points, part = 1 / 2) =>
-  points.reduce((accum, el, i, arr) => {
-    accum.push(
-      getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0], 1 - part)
-    );
-    accum.push(getPointAtLinePart(el, arr[i + 1] ? arr[i + 1] : arr[0], part));
-    return accum;
-  }, []);
+dragRadius.observe ( radius => {
+    $("#small-radius").value = radius;
+})
 
-const renderStarPath = (basePoints, additionalPoints) => {
-  const n = additionalPoints.length;
-  return `
-         M ${additionalPoints[n - 1].join()}
-         ${basePoints
-           .map(
-             (point, i) => `
-             Q ${basePoints[i].join()} ${additionalPoints[i * 2].join()}
-             L ${additionalPoints[i * 2 + 1].join()}
-         `
-           )
-           .join("")}
-     `;
-};
+const radius = merge(
+  radiusInput,
+  dragRadius
+);
 
-const renderPoints = (data, className = "") => {
-  const points = d3
-    .select("#canvas")
-    .selectAll("." + className)
-    .data(data);
+const angle = dragStart
+  .map(() => {
+    const { width, height } = document.body.getBoundingClientRect();
+    return [width / 2, height / 2];
+  })
+  .chain(([cx, cy]) => {
+    return mousemove
+      .takeUntil(dragEnd)
+      .map(([x, y]) => Math.atan2(cx - x, cy - y));
+  });
 
-  points.attr("cx", d => d[0]).attr("cy", d => d[1]);
-
-  points
-    .enter()
-    .append("circle")
-    .attr("class", className)
-    .attr("r", 3)
-    .attr("cx", d => d[0])
-    .attr("cy", d => d[1]);
-
-  points.exit().remove();
-};
-
-const n = fromEvent("input", document.querySelector("#n"))
-  .map(e => e.target.value)
-  .startWith(document.querySelector("#n").value)
-  .map(Number);
-
-const sRadius = fromEvent("input", document.querySelector("#small-radius"))
-  .map(e => e.target.value)
-  .startWith(document.querySelector("#small-radius").value)
-  .map(Number);
-
-const proportion = fromEvent("input", document.querySelector("#proportions"))
-  .map(e => e.target.value)
-  .startWith(document.querySelector("#proportions").value)
-  .map(Number);
-
-const showPoints = fromEvent("input", document.querySelector("#show-points"))
-  .map(e => e.target.checked)
-  .startWith(document.querySelector("#show-points").checked)
-  .map(Boolean);
-
-combineArray((...args) => args, [n, sRadius, showPoints, proportion]).observe(
+combineArray((...args) => args, [n, radius, showPoints, proportion]).observe(
   ([n, smallRadius, showPoints, proportion]) => {
-    showPoints
-      ? document.querySelector("#canvas").classList.add("Star_points")
-      : document.querySelector("#canvas").classList.remove("Star_points");
-
     const basePoints = getPoints(n, 150, smallRadius);
-    const additionalPoints = getExtendedAdditionalPoints(
-      basePoints,
-      proportion
-    );
+    const additionalPoints = getAdditionalPoints(basePoints, proportion);
 
     star.attr("d", renderStarPath(basePoints, additionalPoints));
+    canvas
+      .classed("Star_points", showPoints)
 
-    renderPoints(basePoints, "base");
-    renderPoints(additionalPoints, "middle");
+      .call(renderPoints, basePoints.filter((a, i) => !(i % 2)), "outer")
+      .call(renderPoints, basePoints.filter((a, i) => i % 2), "inner")
+      .call(renderPoints, additionalPoints, "middle");
   }
 );
