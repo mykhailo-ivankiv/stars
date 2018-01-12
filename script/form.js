@@ -4,10 +4,7 @@ export const fromInput = input => {
   switch (input.type) {
     case "checkbox":
       return fromEvent("change", input)
-        .map(e => {
-          console.log(e.target.checked);
-          return e.target.checked;
-        })
+        .map(e => e.target.checked)
         .startWith(input.checked);
 
     default:
