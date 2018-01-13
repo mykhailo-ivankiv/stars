@@ -12003,7 +12003,7 @@ const proportion = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__script_uti
 const showPoints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__script_utils__["a" /* fromInput */])($("#show-points")).map(Boolean);
 
 const dragStart = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("mousedown", canvas.node())
-  .filter(ev => ev.target.matches(".inner"))
+  .filter(ev => ev.target.matches(".Star__point_inner"))
   .map(ev => [ev.clientX, ev.clientY]);
 
 const dragEnd = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_most__["a" /* fromEvent */])("mouseup", document);

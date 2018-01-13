@@ -12,7 +12,7 @@ const proportion = fromInput($("#proportions")).map(Number);
 const showPoints = fromInput($("#show-points")).map(Boolean);
 
 const dragStart = fromEvent("mousedown", canvas.node())
-  .filter(ev => ev.target.matches(".inner"))
+  .filter(ev => ev.target.matches(".Star__point_inner"))
   .map(ev => [ev.clientX, ev.clientY]);
 
 const dragEnd = fromEvent("mouseup", document);
