@@ -1,10 +1,10 @@
-import { combineArray, fromEvent, chain, merge } from "most";
-import { fromInput } from "./script/form";
-import * as d3 from "d3";
+import { combine, fromEvent, merge } from "most";
+import { fromInput } from "./script/utils";
+import { select } from "d3";
 import Star from "./script/star";
 
 const $ = document.querySelector.bind(document);
-const canvas = d3.select("#canvas");
+const canvas = select("#canvas");
 
 const n = fromInput($("#n")).map(Number);
 const radiusInput = fromInput($("#small-radius")).map(Number);
@@ -58,29 +58,25 @@ const angle = dragStart
     return [cx, cy, angle];
   })
   .chain(([cx, cy, startAngle]) => {
-    const startCanvasAngle = Number(
-      (d3
-        .select(".wrapper")
-        .style("transform")
-        .match(/-?\d+\.\d+/) || [0])[0]
-    );
+    const startCanvasAngle = star.angle;
 
     return mousemove
       .takeUntil(dragEnd)
       .map(
         ([x, y]) =>
-          startCanvasAngle + (startAngle - Math.atan2(cx - x, cy - y)) * 57.3
+          startCanvasAngle + (startAngle - Math.atan2(cx - x, cy - y))
       );
-  })
-  .observe(a => {
-    d3.select(".wrapper").style("transform", `rotate(${a}deg)`);
   });
+
+angle.observe(a => {
+    star.setAngle(a)
+});
 
 const star = new Star(canvas);
 
-combineArray((...args) => args, [n, radius, showPoints, proportion]).observe(
-  ([n, smallRadius, showPoints, proportion]) => {
-    star.update(n, 150, smallRadius, proportion);
-    star.render(showPoints);
-  }
+combine(Array.of, n, radius).observe(([n, radius]) =>
+  star.update(n, 150, radius)
 );
+
+showPoints.observe(showPoints => star.showPoints(showPoints));
+proportion.observe(proportion => star.setCurveProportion(proportion));

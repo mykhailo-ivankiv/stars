@@ -1,37 +1,52 @@
 import Line from "./Line";
 import Point from "./Point";
 import Points from "./Points";
+import { range } from "d3";
+import { circlePairs } from "./utils";
 
 class Star {
   constructor(canvas) {
     this.canvas = canvas;
     this.root = canvas.append("path");
+    this.proportion = 0.5;
+    this.angle = 0;
   }
 
-  update(n, radius, smallRadius, proportion) {
-    this.basePoints = this.getPoints(n, radius, smallRadius);
-    this.additionalPoints = this.getAdditionalPoints(proportion);
+  update(n, radius, smallRadius) {
+    this.n = n;
+    this.radius= radius;
+    this.smallRadius = smallRadius;
+
+    this.calculateMainPoints(n, radius, smallRadius);
+    this.render();
   }
 
-  getPoints(n, r1, r2) {
-    const angle = 2 * Math.PI / n;
-
-    return [...Array(n).keys()].reduce(
-      (accum, i) =>
-        accum
-          .add(new Point(angle * i, r1, "radian"))
-          .add(new Point(angle * (i + 1 / 2), r2, "radian")),
-      new Points()
-    );
+  setCurveProportion(proportion) {
+    this.proportion = proportion;
+    this.calculateBezierPoints();
+    this.render();
   }
 
-  getAdditionalPoints(part = 1 / 2) {
-    return this.basePoints.reduce((accum, el, i, arr) => {
-      const line = new Line(el, arr[i + 1] || arr[0]);
-      return accum
-        .add(line.getPointAtPart(1 - part))
-        .add(line.getPointAtPart(part));
-    }, new Points());
+  calculateMainPoints() {
+    const {n, radius, smallRadius} = this;
+    const angle = Math.PI / n;
+    this.basePoints = range(2 * n)
+      .map(i => (i % 2 ? radius : smallRadius))
+      .map((radius, i) => new Point(angle * i, radius, "radian"));
+
+    this.calculateBezierPoints();
+  }
+
+  calculateBezierPoints() {
+    this.additionalPoints = circlePairs(this.basePoints)
+      .map(([p1, p2]) => new Line(p1, p2))
+      .reduce(
+        (accum, line) =>
+          accum
+            .add(line.getPointAtPart(1 - this.proportion))
+            .add(line.getPointAtPart(this.proportion)),
+        new Points()
+      );
   }
 
   getPath() {
@@ -51,17 +66,22 @@ class Star {
    `;
   }
 
-  render(showPoints) {
+  showPoints(showPoints) {
+    this.canvas.classed("Star_points", showPoints);
+  }
+
+  setAngle(angle) {
+    this.angle = angle;
+    this.canvas
+        .attr("transform", `translate(150,150)rotate(${angle * 57.2958})`)
+  }
+
+  render() {
     this.root.attr("d", this.getPath());
 
     this.canvas
-      .classed("Star_points", showPoints)
-      .call(
-        Points.render,
-        this.basePoints.filter((a, i) => !(i % 2)),
-        "outer"
-      )
-      .call(Points.render, this.basePoints.filter((a, i) => i % 2), "inner")
+      .call(Points.render, this.basePoints.filter((a, i) => !(i % 2)), "inner")
+      .call(Points.render, this.basePoints.filter((a, i) => i % 2), "outer")
       .call(Points.render, this.additionalPoints, "middle");
   }
 }
