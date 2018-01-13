@@ -11846,6 +11846,8 @@ const fromInput = input => {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Line__ = __webpack_require__(538);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Point__ = __webpack_require__(539);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Points__ = __webpack_require__(540);
+
 
 
 
@@ -11857,38 +11859,28 @@ class Star {
 
   update(n, radius, smallRadius, proportion) {
     this.basePoints = this.getPoints(n, radius, smallRadius);
-    this.additionalPoints = this.getAdditionalPoints(
-      this.basePoints,
-      proportion
-    );
+    this.additionalPoints = this.getAdditionalPoints(proportion);
   }
 
   getPoints(n, r1, r2) {
     const angle = 2 * Math.PI / n;
 
-    return [...Array(n).keys()].reduce((accum, i) => {
-      accum.push([Math.cos(angle * i) * r1, Math.sin(angle * i) * r1]);
-
-      accum.push([
-        Math.cos(angle * i + angle / 2) * r2,
-        Math.sin(angle * i + angle / 2) * r2
-      ]);
-
-      return accum;
-    }, []);
+    return [...Array(n).keys()].reduce(
+      (accum, i) =>
+        accum
+          .add(new __WEBPACK_IMPORTED_MODULE_1__Point__["a" /* default */](angle * i, r1, "radian"))
+          .add(new __WEBPACK_IMPORTED_MODULE_1__Point__["a" /* default */](angle * (i + 1 / 2), r2, "radian")),
+      new __WEBPACK_IMPORTED_MODULE_2__Points__["a" /* default */]()
+    );
   }
 
-  getAdditionalPoints(points, part = 1 / 2) {
-    return points.reduce((accum, el, i, arr) => {
-      const p1 = new __WEBPACK_IMPORTED_MODULE_1__Point__["a" /* default */](...el);
-      const p2 = new __WEBPACK_IMPORTED_MODULE_1__Point__["a" /* default */](...(arr[i + 1] ? arr[i + 1] : arr[0]));
-
-      const line = new __WEBPACK_IMPORTED_MODULE_0__Line__["a" /* default */](p1, p2);
-
-      accum.push(line.getPointAtPart(1 - part), line.getPointAtPart(part));
-
-      return accum;
-    }, []);
+  getAdditionalPoints(part = 1 / 2) {
+    return this.basePoints.reduce((accum, el, i, arr) => {
+      const line = new __WEBPACK_IMPORTED_MODULE_0__Line__["a" /* default */](el, arr[i + 1] || arr[0]);
+      return accum
+        .add(line.getPointAtPart(1 - part))
+        .add(line.getPointAtPart(part));
+    }, new __WEBPACK_IMPORTED_MODULE_2__Points__["a" /* default */]());
   }
 
   getPath() {
@@ -11908,34 +11900,18 @@ class Star {
    `;
   }
 
-  renderPoints(context, data, className = "") {
-    const points = context.selectAll("." + className).data(data);
-
-    points.attr("cx", d => d[0]).attr("cy", d => d[1]);
-
-    points
-      .enter()
-      .append("circle")
-      .attr("class", className)
-      .attr("r", 3)
-      .attr("cx", d => d[0])
-      .attr("cy", d => d[1]);
-
-    points.exit().remove();
-  }
-
   render(showPoints) {
     this.root.attr("d", this.getPath());
 
     this.canvas
       .classed("Star_points", showPoints)
       .call(
-        this.renderPoints,
+        __WEBPACK_IMPORTED_MODULE_2__Points__["a" /* default */].render,
         this.basePoints.filter((a, i) => !(i % 2)),
         "outer"
       )
-      .call(this.renderPoints, this.basePoints.filter((a, i) => i % 2), "inner")
-      .call(this.renderPoints, this.additionalPoints, "middle");
+      .call(__WEBPACK_IMPORTED_MODULE_2__Points__["a" /* default */].render, this.basePoints.filter((a, i) => i % 2), "inner")
+      .call(__WEBPACK_IMPORTED_MODULE_2__Points__["a" /* default */].render, this.additionalPoints, "middle");
   }
 }
 
@@ -28662,15 +28638,60 @@ class Line extends Array {
 
 "use strict";
 class Point extends Array {
-    constructor(x, y) {
-        super();
-        this.x = x;
-        this.y = y;
-        this[0] = x;
-        this[1] = y;
+  constructor(a, b, type) {
+    super();
+
+    if (type === "radian") {
+      this.initRadian(a, b);
+    } else {
+      this.initDecart(a, b);
     }
+  }
+
+  initDecart(x, y) {
+    this.x = x;
+    this.y = y;
+    this[0] = x;
+    this[1] = y;
+  }
+
+  initRadian(angle, radius) {
+    this.initDecart(Math.cos(angle) * radius, Math.sin(angle) * radius);
+  }
 }
 /* harmony default export */ __webpack_exports__["a"] = (Point);
+
+
+/***/ }),
+/* 540 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Points extends Array {
+    static render (context, data, className = "") {
+        const points = context.selectAll("." + className).data(data);
+
+        points
+            .enter()
+            .append("circle")
+            .attr("class", className)
+            .attr("r", 3)
+            .merge(points)
+            .attr("cx", d => d[0])
+            .attr("cy", d => d[1]);
+
+        points.exit().remove();
+    }
+    constructor() {
+        super();
+    }
+    add(point) {
+        this.push(point);
+        return this;
+    }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Points);
 
 /***/ })
 /******/ ]);
