@@ -1,21 +1,26 @@
-.Star .outer,
-.Star .inner,
-.Star .middle {
+.Star {
+}
+
+.Star__point {}
+
+.Star__point_outer,
+.Star__point_inner,
+.Star__point_middle {
   fill: transparent;
   stroke: transparent;
 }
 
-.Star_points .outer {
+.Star_points .Star__point_outer {
   stroke: grey;
   fill: #fff;
 }
 
-.Star_points .inner {
+.Star_points .Star__point_inner {
   stroke: grey;
   fill: #fff;
 }
 
-.Star_points .middle {
+.Star_points .Star__point_middle {
   stroke: grey;
   fill: #67b0ff;
 }
@@ -24,8 +29,6 @@ svg {
   overflow: visible;
   margin: auto;
   width: 50%;
-  /*width: 300px;*/
-  /*height: 300px;*/
   border-radius: 100%;
 }
 

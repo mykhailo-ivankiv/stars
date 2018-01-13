@@ -30,7 +30,6 @@ const dragRadius = dragStart
     return [left + width / 2, top + height / 2, width / 300];
   })
   .chain(([cx, cy, scale]) => {
-    console.log(scale);
     return mousemove
       .takeUntil(dragEnd)
       .map(([x, y]) => Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) / scale);

@@ -2,14 +2,14 @@ class Point extends Array {
   constructor(a, b, type) {
     super();
 
-    if (type === "radian") {
+    if (type === "polar") {
       this.initRadian(a, b);
     } else {
-      this.initDecart(a, b);
+      this.initCartesian(a, b);
     }
   }
 
-  initDecart(x, y) {
+  initCartesian(x, y) {
     this.x = x;
     this.y = y;
     this[0] = x;
@@ -17,7 +17,7 @@ class Point extends Array {
   }
 
   initRadian(angle, radius) {
-    this.initDecart(Math.cos(angle) * radius, Math.sin(angle) * radius);
+    this.initCartesian(Math.cos(angle) * radius, Math.sin(angle) * radius);
   }
 }
 export default Point;

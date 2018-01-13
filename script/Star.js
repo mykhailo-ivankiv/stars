@@ -13,9 +13,8 @@ class Star {
   }
 
   update(n, radius, smallRadius) {
-    this.n = n;
-    this.radius= radius;
-    this.smallRadius = smallRadius;
+    Object.assign(this, {n, radius, smallRadius});
+
 
     this.calculateMainPoints(n, radius, smallRadius);
     this.render();
@@ -32,7 +31,7 @@ class Star {
     const angle = Math.PI / n;
     this.basePoints = range(2 * n)
       .map(i => (i % 2 ? radius : smallRadius))
-      .map((radius, i) => new Point(angle * i, radius, "radian"));
+      .map((radius, i) => new Point(angle * i, radius, "polar"));
 
     this.calculateBezierPoints();
   }
@@ -80,9 +79,9 @@ class Star {
     this.root.attr("d", this.getPath());
 
     this.canvas
-      .call(Points.render, this.basePoints.filter((a, i) => !(i % 2)), "inner")
-      .call(Points.render, this.basePoints.filter((a, i) => i % 2), "outer")
-      .call(Points.render, this.additionalPoints, "middle");
+      .call(Points.render, this.basePoints.filter((a, i) => !(i % 2)), "Star__point_inner")
+      .call(Points.render, this.basePoints.filter((a, i) => i % 2), "Star__point_outer")
+      .call(Points.render, this.additionalPoints, "Star__point_middle");
   }
 }
 
